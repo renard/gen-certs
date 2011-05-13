@@ -44,6 +44,7 @@ Commands:
   ca                    Create a new CA
     --ca-conf PATH        Path to openssl configuration (${ca_conf})
     --dump                Dump CA
+    --dump-crl            Dump CRL
     --no-pass             Create a key without password
     --pass PASS           Set the CA password
     --genrsa-opt OPT      Options for gensra (${genrsa_opt})
@@ -53,6 +54,7 @@ Commands:
     --add-file FILE       Add file to the certificate directory
     --cn-conf PATH        Path to openssl configuration (${cn_conf})
     --dump                Dump certificate
+    --revoke              Revoke certificate
     --genrsa-opt OPT      Options for gensra (${genrsa_opt})
     --no-pass             Create a key without password
     --pass PASS           Set the certificate password
@@ -70,6 +72,7 @@ function do_ca() {
   local pass=
   local no_pass=
   local dump=
+  local dump_crl=
   while test $# -ne 0; do
     case "$1" in
       --ca-conf)
@@ -77,6 +80,7 @@ function do_ca() {
         ca_conf="$2"
         shift ;;
       --dump) dump=1;;
+      --dump-crl) dump_crl=1;;
       --genrsa-opt)
         test -z "$2" && die "$1 requires a parameter"
         genrsa_opt="$2"
@@ -99,6 +103,11 @@ function do_ca() {
     ${openssl} x509 -text -in "${ca_dir}/ca.pem"
     return
   fi
+  if ! test -z "${dump_crl}"; then
+    ${openssl} crl -text -in "${ca_dir}/crl.pem"
+    cat "${ca_dir}/index.txt"
+    return
+  fi
   test -z "${pass}" && pass=$(${passgen} ${passgen_opt})
   test -d "${ca_dir}" || mkdir -p "${ca_dir}"
   cd "${ca_dir}"
@@ -107,7 +116,19 @@ function do_ca() {
   ${openssl} rsa -passin pass:${pass} -in ca.key -out ca.key-nopass
   ${openssl} req -new -x509 -key ca.key-nopass -out ca.pem \
     -config "${ORIGIN}/${ca_conf}" ${req_opt}
+
+  touch index.txt
+  touch index.txt.attr
+  printf '%.6d' 0 > number.txt
+  # Generate CRL
+  ${openssl} ca -config "${ORIGIN}/${ca_conf}" -gencrl \
+      -keyfile ca.key-nopass -cert ca.pem -out crl.pem
+  openssl crl -inform PEM -in crl.pem -outform DER \
+      -out crl.der
+
+
   test -z "${no_pass}" && rm -f ca.key-nopass
+
 } 
 
 
@@ -115,6 +136,7 @@ function do_cn() {
   local pass=
   local no_pass=
   local dump=
+  local revoke=
   local cn=
   local dhparam=
   local add_file=
@@ -134,6 +156,7 @@ function do_cn() {
         dhparam_opt="$2"
         shift ;;
       --dump) dump=1 ;;
+      --revoke) revoke=1;;
       --genrsa-opt)
         test -z "$2" && die "$1 requires a parameter"
         genrsa_opt="$2"
@@ -158,6 +181,17 @@ function do_cn() {
     ${openssl} x509 -text -in "${cn}/${cn}.pem"
     return
   fi
+  if ! test -z "${revoke}"; then
+      cd "${ca_dir}"
+      ${openssl} ca -config "${ORIGIN}/${ca_conf}" \
+	  -revoke "../${cn}/${cn}.pem" -keyfile ca.key-nopass \
+	  -cert ca.pem
+      ${openssl} ca -config "${ORIGIN}/${ca_conf}" -gencrl \
+	  -keyfile ca.key-nopass -cert ca.pem -out crl.pem
+      ${openssl} crl -inform PEM -in crl.pem -outform DER -out crl.der
+      return
+  fi
+
   test -z "${pass}" && pass=$(${passgen} ${passgen_opt})
   test -d "${cn}" || mkdir -p "${cn}"
   cp "${ORIGIN}/${cn_conf}" "${cn}/${cn}.conf"
