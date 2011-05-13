@@ -168,7 +168,7 @@ function do_cn() {
   echo "${pass}" > ${cn}.pass
 
   if ! test -f ../serial.txt; then
-      serial=0
+      serial=1
   else
       serial=$(expr `cat ../serial.txt` + 1)
   fi
@@ -180,11 +180,13 @@ function do_cn() {
   ${openssl} req -new -nodes -key ${cn}.key-nopass -out ${cn}.csr \
     -config "${cn}.conf"
   ${openssl} x509 -req -in ${cn}.csr -CA "${_ca_dir}/ca.pem" \
-    -CAkey "${_ca_dir}/ca.key-nopass" -CAserial serial.txt \
+    -CAkey "${_ca_dir}/ca.key-nopass" -CAserial ../serial.txt \
     -out ${cn}.pem ${x509_opt}
   cp "${_ca_dir}/ca.pem" .
   test -z "${dhparam}" || ${openssl} dhparam -out dh2048.pem ${dhparam_opt}
-  #rm -f serial.txt "${cn}.conf" "${cn}.csr"
+  if test -z "${debug}"; then
+      rm -f "${cn}.conf" "${cn}.csr"
+  fi
   if test -z "${no_pass}"; then
     rm -f "${cn}.key-nopass"
   else
