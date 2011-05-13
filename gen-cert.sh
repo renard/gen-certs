@@ -8,6 +8,7 @@ ca_dir=ca
 openssl=/usr/bin/openssl
 ca_conf=ca.conf
 cn_conf=cn.conf
+serial="../serial.txt"
 dhparam_opt="2048"
 genrsa_opt="-des3 2048"
 passgen=/usr/bin/makepasswd
@@ -58,6 +59,7 @@ Commands:
     --dhparam             Add Diffie Hillman parameters
     --dhparam-opt OPT     Options for dhparam (${dhparam_opt})
     --x509-opt OPT        Options for x509 (${x509_opt})
+    --serial FILE         Serial file (${serial})
     cn                    Set the CN to the certificate
 
 EOF
@@ -167,12 +169,12 @@ function do_cn() {
   sed -i "s/@@CN@@/${cn}/g" "${cn}.conf"
   echo "${pass}" > ${cn}.pass
 
-  if ! test -f ../serial.txt; then
-      serial=1
+  if ! test -f ${serial}; then
+      serial_id=1
   else
-      serial=$(expr `cat ../serial.txt` + 1)
+      serial_id=$(expr `cat ${serial}` + 1)
   fi
-  printf %.6d ${serial} > ../serial.txt
+  printf %.6d ${serial_id} > ${serial}
 
   local _ca_dir="${ORIGIN}/${workdir}/${ca_dir}"
   ${openssl} genrsa -passout pass:${pass} -out ${cn}.key ${genrsa_opt}
@@ -180,7 +182,7 @@ function do_cn() {
   ${openssl} req -new -nodes -key ${cn}.key-nopass -out ${cn}.csr \
     -config "${cn}.conf"
   ${openssl} x509 -req -in ${cn}.csr -CA "${_ca_dir}/ca.pem" \
-    -CAkey "${_ca_dir}/ca.key-nopass" -CAserial ../serial.txt \
+    -CAkey "${_ca_dir}/ca.key-nopass" -CAserial ${serial} \
     -out ${cn}.pem ${x509_opt}
   cp "${_ca_dir}/ca.pem" .
   test -z "${dhparam}" || ${openssl} dhparam -out dh2048.pem ${dhparam_opt}
