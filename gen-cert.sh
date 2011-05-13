@@ -1,8 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright (c) 2009 Sébastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 # Released under GPL, see http://gnu.org for further information.
 
 # default options
+config=config
 ca_dir=ca
 openssl=/usr/bin/openssl
 ca_conf=ca.conf
