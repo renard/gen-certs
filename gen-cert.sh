@@ -32,6 +32,7 @@ options:
   -d|--debug              Display debug messages
   -h|--help               Display this help screen
   -w|--workdir DIR        Set the working directory (${workdir})
+  -c|--config             Set configuration file (${config})
   --ca-dir                Set the CA directory (${ca_dir})
   --openssl PATH          Path to openssl binary (${openssl})
   --passgen PATH          Path to the password generator (${passgen})
@@ -185,6 +186,12 @@ function do_cn() {
   fi
 }
 
+
+if test -e "${config}"; then
+    . "${config}"
+fi
+
+
 # parse command line options
 command=
 while test $# != 0 && test -z "$command"; do
@@ -214,12 +221,20 @@ while test $# != 0 && test -z "$command"; do
       test -z "$2" && die "$1 requires a parameter"
       workdir="$2"
       shift ;;
+    --config)
+      test -z "$2" && die "$1 requires a parameter"
+      config="$2"
+      shift ;;
     --help|-h) help 0;;
     --) shift ; break ;;
     -*|*) help 1 ;;
   esac
   shift
 done
+
+if test -e "${config}"; then
+    . "${config}"
+fi
 
 test -z "${command}" && die "No command specified"
 ORIGIN=$(pwd)
