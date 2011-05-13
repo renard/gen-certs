@@ -43,14 +43,14 @@ Commands:
     --dump                Dump CA
     --no-pass             Create a key without password
     --pass PASS           Set the CA password
-    --genrsa-opt OPT      Options for gensra (${gensra_opt})
+    --genrsa-opt OPT      Options for gensra (${genrsa_opt})
     --req-opt OPT         Options for req (${req_opt})
 
   cn                    Create a new certificate
     --add-file FILE       Add file to the certificate directory
     --cn-conf PATH        Path to openssl configuration (${cn_conf})
     --dump                Dump certificate
-    --genrsa-opt OPT      Options for gensra (${gensra_opt})
+    --genrsa-opt OPT      Options for gensra (${genrsa_opt})
     --no-pass             Create a key without password
     --pass PASS           Set the certificate password
     --dhparam             Add Diffie Hillman parameters
