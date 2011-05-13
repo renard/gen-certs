@@ -166,7 +166,14 @@ function do_cn() {
   cd "${cn}"
   sed -i "s/@@CN@@/${cn}/g" "${cn}.conf"
   echo "${pass}" > ${cn}.pass
-  echo 01 > serial.txt
+
+  if ! test -f ../serial.txt; then
+      serial=0
+  else
+      serial=$(expr `cat ../serial.txt` + 1)
+  fi
+  printf %.6d ${serial} > ../serial.txt
+
   local _ca_dir="${ORIGIN}/${workdir}/${ca_dir}"
   ${openssl} genrsa -passout pass:${pass} -out ${cn}.key ${genrsa_opt}
   ${openssl} rsa -passin pass:${pass} -in ${cn}.key -out ${cn}.key-nopass
