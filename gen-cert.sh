@@ -203,12 +203,17 @@ function do_cn() {
   sed -i "s/@@CN@@/${cn}/g" "${cn}.conf"
   echo "${pass}" > ${cn}.pass
 
+  # if ! test -f ${serial}; then
+  #     serial_id=1
+  # else
+  #     serial_id=$(expr `cat ${serial}` + 1)
+  # fi
+  # printf %.6d ${serial_id} > ${serial}
+
   if ! test -f ${serial}; then
-      serial_id=1
-  else
-      serial_id=$(expr `cat ${serial}` + 1)
+      echo 00 > ${serial}
   fi
-  printf %.6d ${serial_id} > ${serial}
+
 
   local _ca_dir="${ORIGIN}/${workdir}/${ca_dir}"
   ${openssl} genrsa -passout pass:${pass} -out ${cn}.key ${genrsa_opt}
