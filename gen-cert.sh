@@ -16,7 +16,7 @@ passgen_opt="-chars 10"
 req_opt="-utf8 -days 180"
 workdir=out
 x509_opt="-days 180"
-
+add_file="client-linux.ovpn client-mac.ovpn client-windows.ovpn"
 
 function die() {
   echo "$@" >&2
@@ -51,7 +51,7 @@ Commands:
     --req-opt OPT         Options for req (${req_opt})
 
   cn                    Create a new certificate
-    --add-file FILE       Add file to the certificate directory
+    --add-file FILE       Add file to the certificate directory (${add_file})
     --cn-conf PATH        Path to openssl configuration (${cn_conf})
     --dump                Dump certificate
     --revoke              Revoke certificate
@@ -139,11 +139,10 @@ function do_cn() {
   local revoke=
   local cn=
   local dhparam=
-  local add_file=
   while test $# -ne 0 && test -z "${cn}"; do
     case "$1" in
       --add-file)
-        test -z "$2" && die "$1 requires a parameter"
+	# Can be empty
         add_file="$2"
         shift ;;
       --cn-conf)
@@ -196,8 +195,10 @@ function do_cn() {
   test -d "${cn}" || mkdir -p "${cn}"
   cp "${ORIGIN}/${cn_conf}" "${cn}/${cn}.conf"
   if ! test -z "${add_file}"; then
-    sed "s/@@CN@@/${cn}/g" < "${ORIGIN}/${add_file}" \
-      > ${cn}/$(basename ${add_file})
+      for f in ${add_file}; do
+	  sed "s/@@CN@@/${cn}/g" < "${ORIGIN}/${f}" \
+	      > ${cn}/$(basename ${f})
+      done
   fi
   cd "${cn}"
   sed -i "s/@@CN@@/${cn}/g" "${cn}.conf"
