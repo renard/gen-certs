@@ -3,6 +3,7 @@
 # Released under GPL, see http://gnu.org for further information.
 
 # default options
+debug=
 config=config
 ca_dir=ca
 openssl=/usr/bin/openssl
@@ -268,14 +269,15 @@ while test $# != 0 && test -z "$command"; do
       test -z "$2" && die "$1 requires a parameter"
       openssl="$2"
       shift ;;
-    --workdir)
+    -w|--workdir)
       test -z "$2" && die "$1 requires a parameter"
       workdir="$2"
       shift ;;
-    --config)
+    -c|--config)
       test -z "$2" && die "$1 requires a parameter"
       config="$2"
       shift ;;
+    -d|--debug) debug=1 ;;
     --help|-h) help 0;;
     --) shift ; break ;;
     -*|*) help 1 ;;
