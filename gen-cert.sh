@@ -21,6 +21,10 @@ else
     # password length should be multiple of 3.
     passgen_opt="rand -base64 9"
 fi
+sed=$(which gsed)
+if test -n "${sed}"; then
+    sed=$(which sed)
+fi
 req_opt="-utf8 -days 180"
 workdir=out
 x509_opt="-days 180"
@@ -46,6 +50,7 @@ options:
   --openssl PATH          Path to openssl binary (${openssl})
   --passgen PATH          Path to the password generator (${passgen})
   --passgen-opt OPT       Options for the password generator (${passgen_opt})
+  --sed PATH              Path to sed (${sed})
 
 Commands:
 
@@ -208,12 +213,12 @@ function do_cn() {
     cp "${ORIGIN}/${cn_conf}" "${cn}/${cn}.conf"
     if ! test -z "${add_file}"; then
 	for f in ${add_file}; do
-	    sed "s/@@CN@@/${cn}/g" < "${ORIGIN}/${f}" \
+	    ${sed} "s/@@CN@@/${cn}/g" < "${ORIGIN}/${f}" \
 		> ${cn}/$(basename ${f})
 	done
     fi
     cd "${cn}"
-    sed -i "s/@@CN@@/${cn}/g" "${cn}.conf"
+    ${sed} -i "s/@@CN@@/${cn}/g" "${cn}.conf"
     echo "${pass}" > ${cn}.pass
 
     # if ! test -f ${serial}; then
@@ -280,6 +285,10 @@ while test $# != 0 && test -z "$command"; do
 	--openssl)
 	    test -z "$2" && die "$1 requires a parameter"
 	    openssl="$2"
+	    shift ;;
+	--sed)
+	    test -z "$2" && die "$1 requires a parameter"
+	    sed="$2"
 	    shift ;;
 	-w|--workdir)
 	    test -z "$2" && die "$1 requires a parameter"
