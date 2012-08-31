@@ -6,7 +6,7 @@
 debug=
 config=config
 ca_dir=ca
-openssl=/usr/bin/openssl
+openssl=$(which openssl)
 ca_conf=ca.conf
 cn_conf=cn.conf
 serial="../serial.txt"
