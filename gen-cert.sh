@@ -70,6 +70,7 @@ Commands:
     --dhparam-opt OPT     Options for dhparam (${dhparam_opt})
     --x509-opt OPT        Options for x509 (${x509_opt})
     --serial FILE         Serial file (${serial})
+    --copy-crl            Copy Certificate Revocation List
     cn                    Set the CN to the certificate
 
 EOF
@@ -147,6 +148,7 @@ function do_cn() {
     local revoke=
     local cn=
     local dhparam=
+    local copy_crl=
     while test $# -ne 0 && test -z "${cn}"; do
 	case "$1" in
 	    --add-file)
@@ -177,6 +179,8 @@ function do_cn() {
 		test -z "$2" && die "$1 requires a parameter"
 		x509_opt="$2"
 		shift ;;
+	    --copy-crl)
+		copy_crl=1 ;;
 	    --) shift ; break ;;
 	    -*) help 0 ;;
 	    *) cn="$1" ;;
@@ -233,6 +237,7 @@ function do_cn() {
 	-CAkey "${_ca_dir}/ca.key-nopass" -CAserial ${serial} \
 	-out ${cn}.pem ${x509_opt}
     cp "${_ca_dir}/ca.pem" .
+    test -z "${copy_crl}" || cp "${_ca_dir}/crl.pem" .
     test -z "${dhparam}" || ${openssl} dhparam -out dh2048.pem ${dhparam_opt}
     if test -z "${debug}"; then
 	rm -f "${cn}.conf" "${cn}.csr"
