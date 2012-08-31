@@ -128,7 +128,7 @@ function do_ca() {
     touch index.txt
     touch index.txt.attr
     printf '%.6d' 0 > number.txt
-  # Generate CRL
+    # Generate CRL
     ${openssl} ca -config "${ORIGIN}/${ca_conf}" -gencrl \
 	-keyfile ca.key-nopass -cert ca.pem -out crl.pem
     openssl crl -inform PEM -in crl.pem -outform DER \
@@ -212,12 +212,12 @@ function do_cn() {
     sed -i "s/@@CN@@/${cn}/g" "${cn}.conf"
     echo "${pass}" > ${cn}.pass
 
-  # if ! test -f ${serial}; then
-  #     serial_id=1
-  # else
-  #     serial_id=$(expr `cat ${serial}` + 1)
-  # fi
-  # printf %.6d ${serial_id} > ${serial}
+    # if ! test -f ${serial}; then
+    #     serial_id=1
+    # else
+    # 	serial_id=$(expr `cat ${serial}` + 1)
+    # fi
+    # printf %.6d ${serial_id} > ${serial}
 
     if ! test -f ${serial}; then
 	echo 00 > ${serial}
