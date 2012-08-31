@@ -152,7 +152,7 @@ function do_cn() {
     while test $# -ne 0 && test -z "${cn}"; do
 	case "$1" in
 	    --add-file)
-	# Can be empty
+	        # Can be empty
 		add_file="$2"
 		shift ;;
 	    --cn-conf)
