@@ -12,8 +12,15 @@ cn_conf=cn.conf
 serial="../serial.txt"
 dhparam_opt="2048"
 genrsa_opt="-des3 2048"
-passgen=/usr/bin/makepasswd
-passgen_opt="-chars 10"
+passgen=$(which makepasswd)
+if test -n "${passgen}"; then
+    passgen=/usr/bin/makepasswd
+    passgen_opt="-chars 10"
+else
+    passgen="${openssl}"
+    # password length should be multiple of 3.
+    passgen_opt="rand -base64 9"
+fi
 req_opt="-utf8 -days 180"
 workdir=out
 x509_opt="-days 180"
