@@ -22,7 +22,7 @@ else
     passgen_opt="rand -base64 9"
 fi
 sed=$(which gsed)
-if test -n "${sed}"; then
+if test -z "${sed}"; then
     sed=$(which sed)
 fi
 req_opt="-utf8 -days 180"
