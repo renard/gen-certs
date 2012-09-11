@@ -25,6 +25,13 @@ sed=$(which gsed)
 if test -z "${sed}"; then
     sed=$(which sed)
 fi
+openvpn=$(which openvpn)
+if test -z "${openvpn}"; then
+    # TODO automaticaly detect openvpn binary on MacOSX
+    openvpn="/Applications/Tunnelblick.app/Contents/Resources/openvpn/openvpn-2.2.1/openvpn"
+fi
+
+
 req_opt="-utf8 -days 180"
 workdir=out
 x509_opt="-days 180"
@@ -154,6 +161,8 @@ function do_cn() {
     local cn=
     local dhparam=
     local copy_crl=
+    local tls_auth=
+    local gen_tls=
     while test $# -ne 0 && test -z "${cn}"; do
 	case "$1" in
 	    --add-file)
@@ -176,6 +185,11 @@ function do_cn() {
 		genrsa_opt="$2"
 		shift ;;
 	    --no-pass) no_pass=1 ;;
+	    --gen-tls) gen_tls=1 ;;
+	    --tls-auth)
+		test -z "$2" && die "$1 requires a parameter"
+		tls_auth="$2"
+		shift ;;
 	    --pass)
 		test -z "$2" && die "$1 requires a parameter"
 		pass="$2"
@@ -244,6 +258,10 @@ function do_cn() {
     cp "${_ca_dir}/ca.pem" .
     test -z "${copy_crl}" || cp "${_ca_dir}/crl.pem" .
     test -z "${dhparam}" || ${openssl} dhparam -out dh2048.pem ${dhparam_opt}
+    if test -n "${gen_tls}"; then
+	${openvpn} --genkey --secret tls-auth.key
+	tls_auth="${cn}"
+    fi
     if test -z "${debug}"; then
 	rm -f "${cn}.conf" "${cn}.csr"
     fi
