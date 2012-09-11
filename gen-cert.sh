@@ -83,6 +83,8 @@ Commands:
     --x509-opt OPT        Options for x509 (${x509_opt})
     --serial FILE         Serial file (${serial})
     --copy-crl            Copy Certificate Revocation List
+    --tls-auth            Path to server tls-auth file
+    --gen-tls             Generate tls-auth file
     cn                    Set the CN to the certificate
 
 EOF
