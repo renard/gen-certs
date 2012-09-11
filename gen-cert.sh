@@ -35,7 +35,7 @@ fi
 req_opt="-utf8 -days 180"
 workdir=out
 x509_opt="-days 180"
-add_file="client-linux.ovpn client-mac.ovpn client-windows.ovpn"
+add_file="server.ovpn client.ovpn"
 
 function die() {
     echo "$@" >&2
