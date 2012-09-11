@@ -225,12 +225,7 @@ function do_cn() {
     test -z "${pass}" && pass=$(${passgen} ${passgen_opt})
     test -d "${cn}" || mkdir -p "${cn}"
     cp "${ORIGIN}/${cn_conf}" "${cn}/${cn}.conf"
-    if ! test -z "${add_file}"; then
-	for f in ${add_file}; do
-	    ${sed} "s/@@CN@@/${cn}/g" < "${ORIGIN}/${f}" \
-		> ${cn}/$(basename ${f})
-	done
-    fi
+
     cd "${cn}"
     ${sed} -i "s/@@CN@@/${cn}/g" "${cn}.conf"
     echo "${pass}" > ${cn}.pass
@@ -258,10 +253,34 @@ function do_cn() {
     cp "${_ca_dir}/ca.pem" .
     test -z "${copy_crl}" || cp "${_ca_dir}/crl.pem" .
     test -z "${dhparam}" || ${openssl} dhparam -out dh2048.pem ${dhparam_opt}
+
+    if test -z "${no_pass}"; then
+	include_key="${cn}.key"
+    else
+	include_key="${cn}.key-nopass"
+    fi
+
     if test -n "${gen_tls}"; then
 	${openvpn} --genkey --secret tls-auth.key
 	tls_auth="${cn}"
     fi
+
+
+    if ! test -z "${add_file}"; then
+	for f in ${add_file}; do
+	    ${sed} -e "s/@@CN@@/${cn}/g" \
+		-e "/@@CA@@/r ${_ca_dir}/ca.pem" -e "/@@CA@@/d" \
+		-e "/@@KEY@@/r ${include_key}" -e "/@@KEY@@/d" \
+		-e "/@@CERT@@/r ${cn}.pem" -e "/@@CERT@@/d" \
+		-e "/@@TLS_AUTH@@/r ${ORIGIN}/${workdir}/${tls_auth}/tls-auth.key" -e "/@@TLS_AUTH@@/d" \
+		-e "/@@DH@@/r dh2048.pem" -e "/@@DH@@/d" \
+		< "${ORIGIN}/${f}" \
+		> $(basename ${f})
+	done
+    fi
+
+
+
     if test -z "${debug}"; then
 	rm -f "${cn}.conf" "${cn}.csr"
     fi
