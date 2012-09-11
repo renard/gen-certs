@@ -55,6 +55,7 @@ options:
   -c|--config             Set configuration file (${config})
   --ca-dir                Set the CA directory (${ca_dir})
   --openssl PATH          Path to openssl binary (${openssl})
+  --openvpn PATH          Path to openvpn binary (${openvpn})
   --passgen PATH          Path to the password generator (${passgen})
   --passgen-opt OPT       Options for the password generator (${passgen_opt})
   --sed PATH              Path to sed (${sed})
@@ -314,6 +315,10 @@ while test $# != 0 && test -z "$command"; do
 	--openssl)
 	    test -z "$2" && die "$1 requires a parameter"
 	    openssl="$2"
+	    shift ;;
+	--openvpn)
+	    test -z "$2" && die "$1 requires a parameter"
+	    openvpn="$2"
 	    shift ;;
 	--sed)
 	    test -z "$2" && die "$1 requires a parameter"
