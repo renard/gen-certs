@@ -1,0 +1,48 @@
+#!/bin/sh
+
+# Simple OpenVPN password checker
+
+# The password is stored into client configuration file usinf format:
+#
+#    PASS: <SHA256 HASH>
+#
+# To generate SHA256 hash: echo -n 'S3cr3t' | sha256
+
+# set -x
+
+# on BSD like systems
+SHA256=$(which sha256)
+if test -z "${SHA256}"; then
+    # on linux like systems
+    SHA256=$(which sha256sum)
+fi
+if test -z "${SHA256}"; then
+    # No sha256 tool found
+    exit 1
+fi
+
+# Make sure we remove password from memory
+pass_hash=$(echo -n $password | ${SHA256})
+export password=
+
+# make sure username is correct
+if ! test "$username" = "$common_name"; then
+    exit 1
+fi
+
+ccd_file="clients.d/$common_name"
+
+# if CCD file does not exist, exit
+if ! test -e "$ccd_file"; then
+    exit 1
+fi
+
+auth_hash=$(sed -n 's/^[[:space:]]*#[[:space:]]*PASS[[:space:]]*:[[:space:]]*//p' "$ccd_file")
+
+# Compare hash password
+if ! test "$auth_hash" = "$pass_hash"; then
+    exit 1
+fi
+
+#env
+exit 0
