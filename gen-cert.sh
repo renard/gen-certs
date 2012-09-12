@@ -25,12 +25,6 @@ sed=$(which gsed)
 if test -z "${sed}"; then
     sed=$(which sed)
 fi
-openvpn=$(which openvpn)
-if test -z "${openvpn}"; then
-    # TODO automaticaly detect openvpn binary on MacOSX
-    openvpn="/Applications/Tunnelblick.app/Contents/Resources/openvpn/openvpn-2.2.1/openvpn"
-fi
-
 
 req_opt="-utf8 -days 180"
 workdir=out
@@ -55,7 +49,6 @@ options:
   -c|--config             Set configuration file (${config})
   --ca-dir                Set the CA directory (${ca_dir})
   --openssl PATH          Path to openssl binary (${openssl})
-  --openvpn PATH          Path to openvpn binary (${openvpn})
   --passgen PATH          Path to the password generator (${passgen})
   --passgen-opt OPT       Options for the password generator (${passgen_opt})
   --sed PATH              Path to sed (${sed})
@@ -256,7 +249,9 @@ function do_cn() {
     fi
 
     if test -n "${gen_tls}"; then
-	${openvpn} --genkey --secret tls-auth.key
+	echo "-----BEGIN OpenVPN Static key V1-----" > tls-auth.key
+	${openssl} rand -hex 256 | ${sed} 's/\(.\{32\}\)/\1\n/g' >> tls-auth.key
+	echo "-----END OpenVPN Static key V1-----" >> tls-auth.key
 	tls_auth="${cn}"
     fi
 
@@ -315,10 +310,6 @@ while test $# != 0 && test -z "$command"; do
 	--openssl)
 	    test -z "$2" && die "$1 requires a parameter"
 	    openssl="$2"
-	    shift ;;
-	--openvpn)
-	    test -z "$2" && die "$1 requires a parameter"
-	    openvpn="$2"
 	    shift ;;
 	--sed)
 	    test -z "$2" && die "$1 requires a parameter"
