@@ -1,0 +1,95 @@
+// -*- adoc -*-
+
+= Self-signed PKI system
+:lang: en
+
++gen-cert+ is a simple basic tool to generate self-signed certificate to
+manage OpenVPN authentication scheme and SSL secure server certificates.
+
+== Configuration
+
+Have a look to files located in the +sample+ directory. You might adapt them
+to fit your needs.
+
+Create a directory for your PKI (such as +my-pki+) and copy all files
+into it.
+
+== Certificate of Authority
+
+First thing you need to generate the Certificate of Authority from the
++my-pki+ directory:
+
+----
+gen-cert ca --no-pass
+----
+
+All CA files are generated in the +out/ca+ directory.
+
+== Certificates
+
+To generate a certificate, you need to run following command:
+
+----
+gen-cert cn --add-files '' --no-pass https.example.com
+----
+
+Then you can find the useful files:
+
+* +out/https.example.com/ca.pem+: The CA certificate file
+* +out/https.example.com/https.example.com.pem+: The certificate file
+* +out/https.example.com/https.example.com.pem+: The private key
+
+If you don't use the +--no-pass+ option, the key password is stored into the
++out/https.example.com/https.example.com.pass+ file.
+
+
+For OpenVPN you can generate the server configuration file:
+
+----
+gen-cert cn --no-pass --add-file 'server.conf' --dhparam --gen-tls --copy-crl server.vpn.example.com
+----
+
+Then you will need to use following files:
+
+* +out/server.example.com/server.ovpn+: The OpenVPN configuration file.
+* +out/server.example.com/crl.pem+: Certificate Revocation List file.
+
+You must copy the CRL file to the OpenVPN server any time it is modified.
+
+For OpenVPN client:
+
+----
+gen-cert cn --no-pass --add-file 'client.conf' --tls-auth server.vpn.example.com client.vpn.example.com
+----
+
+Then you only need to deploy the +out/client.vpn.example.com/client.ovpn+ file.
+
+
+== Basic commands
+
+=== Dumping the CA
+
+----
+gen-cert ca --dump
+----
+
+
+=== Dumping a certificate
+
+----
+gen-cert cn --dump bad-guy.vpn.example.com
+----
+
+
+=== Revoking a certificate
+
+----
+gen-cert cn --revoke bad-guy.vpn.example.com
+----
+
+=== Dumping the CRL
+
+----
+gen-cert ca --dump-crl
+----
+
