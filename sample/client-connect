@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Add route to client on connect / disconnect.
+
+# Make sure /etc/sudoers contains
+#
+# Cmnd_Alias OPENVPN_ROUTE=/sbin/route
+# _openvpn ALL=(ALL) NOPASSWD:OPENVPN_ROUTE
+
+# set -x
+# echo "`env`"
+
+if test "$script_type" = "client-connect"; then
+    cmd=add
+else
+    cmd=delete
+fi
+
+sudo /sbin/route $cmd $ifconfig_pool_remote_ip/32 $ifconfig_remote
