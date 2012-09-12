@@ -87,6 +87,8 @@ gen-cert cn --dump bad-guy.vpn.example.com
 gen-cert cn --revoke bad-guy.vpn.example.com
 ----
 
+Do not forget to copy the +out/ca/crl.pem+ wherever it is needed.
+
 === Dumping the CRL
 
 ----
