@@ -46,7 +46,7 @@ If you don't use the +--no-pass+ option, the key password is stored into the
 For OpenVPN you can generate the server configuration file:
 
 ----
-gen-cert cn --no-pass --add-file 'server.conf' --dhparam --gen-tls --copy-crl server.vpn.example.com
+gen-cert cn --no-pass --add-file 'server.ovpn' --dhparam --gen-tls --copy-crl server.vpn.example.com
 ----
 
 Then you will need to use following files:
@@ -59,7 +59,7 @@ You must copy the CRL file to the OpenVPN server any time it is modified.
 For OpenVPN client:
 
 ----
-gen-cert cn --no-pass --add-file 'client.conf' --tls-auth server.vpn.example.com client.vpn.example.com
+gen-cert cn --no-pass --add-file 'client.ovpn' --tls-auth server.vpn.example.com client.vpn.example.com
 ----
 
 Then you only need to deploy the +out/client.vpn.example.com/client.ovpn+ file.
