@@ -79,10 +79,26 @@ Commands:
     --copy-crl            Copy Certificate Revocation List
     --tls-auth            Path to server tls-auth file
     --gen-tls             Generate tls-auth file
+    --markers MARKS       Space separated markers used to split add-files.
     cn                    Set the CN to the certificate
 
 EOF
     exit ${exit_code}
+}
+
+function split_file() {
+    local markers="$1"
+    local files="$2"
+    local all_markers=$(echo "${markers}" | ${sed} 's/[[:space:]]\+/\\|/g')
+    local txt_markers=$(echo "${markers}" | ${sed} 's/[[:space:]]\+/_/g')
+    for file in ${files}; do
+	local ext=$(echo $file | ${sed} -n 's/^\(.*\)\.\([^.]\+\)$/\2/p')
+	local fn=$(echo $file | ${sed} -n 's/^\(.*\)\.\([^.]\+\)$/\1/p')
+	for marker in ${markers}; do
+	    ${sed} "/^### BEGIN-${marker}-MAGIC[[:space:]]*\$/,/^### END-${marker}-MAGIC[[:space:]]*\$/ s/^#[[:space:]]\+//" < "${file}" > "${fn}-${marker}.${ext}"
+	done
+	${sed} "/^### BEGIN-\(${all_markers}\)-MAGIC[[:space:]]*\$/,/^### END-\(${all_markers}\)-MAGIC[[:space:]]*\$/ s/^#[[:space:]]\+//" < "${file}" > "${fn}-${txt_markers}.${ext}"
+    done
 }
 
 function do_ca() {
@@ -159,6 +175,7 @@ function do_cn() {
     local copy_crl=
     local tls_auth=
     local gen_tls=
+    local markers=
     while test $# -ne 0 && test -z "${cn}"; do
 	case "$1" in
 	    --add-file)
@@ -196,6 +213,10 @@ function do_cn() {
 		shift ;;
 	    --copy-crl)
 		copy_crl=1 ;;
+	    --markers)
+		test -z "$2" && die "$1 requires a parameter"
+		markers="$2"
+		shift ;;
 	    --) shift ; break ;;
 	    -*) help 0 ;;
 	    *) cn="$1" ;;
@@ -267,6 +288,9 @@ function do_cn() {
 		< "${ORIGIN}/${f}" \
 		> $(basename ${f})
 	done
+	if test -n "${markers}"; then
+	    split_file "${markers}" "${add_file}"
+	fi
     fi
 
     if test -z "${debug}"; then
